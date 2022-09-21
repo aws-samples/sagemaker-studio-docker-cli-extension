@@ -1,0 +1,8 @@
+{
+    "ImageId": "ami-012345678910",
+    "Key": "<Ec2-Key>",
+    "EBSVolumeSize": 400,
+    "InstanceProfileArn": "arn:aws:iam::012345678910:instance-profile/some-profile-name",
+    "DockerImageURI": "docker:dind",
+    "DockerImageNvidiaURI": "brandsight/dind:nvidia-docker"
+}

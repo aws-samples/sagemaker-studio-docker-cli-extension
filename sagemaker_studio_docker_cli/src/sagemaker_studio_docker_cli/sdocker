@@ -1,0 +1,17 @@
+#!/opt/conda/bin/python3
+
+from parse import ParseArgs
+from commands import Commands
+from config import ReadConfig, get_home
+
+import logging
+
+if __name__ == "__main__":
+    home = get_home()
+    logging.basicConfig(format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d]: %(message)s',
+                        datefmt='%m/%d/%Y %H:%M:%S',
+                        filename=f'{home}/.sagemaker_studio_docker_cli/sdocker.log',
+                        level=logging.INFO)
+    args, parser = (ParseArgs().args, ParseArgs().parser)
+    config = ReadConfig().config
+    Commands(args, config)
