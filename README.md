@@ -42,7 +42,7 @@ It provisions an EC2 instance that is used as a remote docker host to running do
 ### Manual Setup
 Setup is staightforward, you clone this repo and then run `./setup.sh`:
 ```
-$ git clone https://github.com/samdwar1976/sagemaker_studio_docker_cli.git
+$ git clone https://github.com/aws-samples/sagemaker-studio-docker-cli-extension.git
 $ cd sagemaker_studio_docker_cli
 $ ./setup.sh
 ```
@@ -62,13 +62,13 @@ When running `setup.sh` from terminal of `KernalGateway`, make sure to activate 
 
 set -ex
 cd ~
-if cd sagemaker_studio_docker_cli 
+if cd sagemaker-studio-docker-cli-extension 
 then
     git reset --hard
     git pull
 else
-    git clone https://github.com/samdwar1976/sagemaker_studio_docker_cli.git
-    cd sagemaker_studio_docker_cli
+    git clone https://github.com/aws-samples/sagemaker-studio-docker-cli-extension.git
+    cd sagemaker-studio-docker-cli-extension
 fi
 nohup ./setup.sh > docker_setup.out 2>&1 &
 ```
