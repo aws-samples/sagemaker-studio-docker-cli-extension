@@ -51,34 +51,35 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 \
         {efs_ip_address}:/{user_uid} \
         {home}
+
+        CERTS={home}/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs
         
-        mkdir -p /home/sagemaker-user/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs
+        mkdir -p $CERTS
         
-        _tls_generate_certs "/home/sagemaker-user/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs"
+        _tls_generate_certs "$CERTS"
         
         sudo -u ec2-user docker run -d \
         -p {port}:2376 \
         -p 8080:8080 {gpu_option} \
         -v /root:/root \
         -v /home/sagemaker-user:/home/sagemaker-user \
-        -v /home/sagemaker-user/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs/ca:/certs/ca \
-        -v /home/sagemaker-user/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs/server:/certs/server \
-        -v /home/sagemaker-user/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs/client:/certs/client \
+        -v $CERTS:/certs \
         -v {home}:{home} \
         --privileged \
         --name dockerd-server \
         -e DOCKER_TLS_CERTDIR="/certs" {docker_image_name} \
         dockerd --tlsverify --tlscacert=/certs/ca/cert.pem --tlscert=/certs/server/cert.pem --tlskey=/certs/server/key.pem -H=0.0.0.0:2376
     else
-        _tls_generate_certs "/root/.sagemaker_studio_docker_cli/certs"
+        CERTS=/root/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs
+        mkdir -p $CERTS
+
+        _tls_generate_certs "$CERTS"
         sudo -u ec2-user docker run -d \
         -p {port}:2376 \
         -p 8080:8080 {gpu_option} \
         -v /root:/root \
         -v /home/sagemaker-user:/home/sagemaker-user \
-        -v /root/.sagemaker_studio_docker_cli/certs/${{instance_type}}_${{instance_id}}/ca:/certs/ca \
-        -v /root/.sagemaker_studio_docker_cli/certs/${{instance_type}}_${{instance_id}}/server:/certs/server \
-        -v /root/.sagemaker_studio_docker_cli/certs/${{instance_type}}_${{instance_id}}/client:/certs/client \
+        -v $CERTS:/certs \
         --privileged \
         --name dockerd-server \
         -e DOCKER_TLS_CERTDIR="/certs" {docker_image_name} \
