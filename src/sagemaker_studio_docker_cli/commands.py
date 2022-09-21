@@ -13,13 +13,15 @@ retry_wait = 5
 timeout = 720
 max_retries = 720 // retry_wait
 
-def ping_host(dns, port, retry=True):
+def ping_host(home, instance_type, instance_id, dns, port, retry=True):
     """
     Check Docker host health by requesting /version from docker daemon on host
     """
     try:
         log.info(f"Pinging {dns}")
-        response = requests.get(f"http://{dns}:{port}/version")
+        path_to_cert = f"{home}/.sagemaker_studio_docker_cli/{instance_type}_{instance_id}/certs/client/"
+        cert=(path_to_cert + "cert.pem", path_to_cert + "key.pem")
+        response = json.loads(requests.get(f"https://{dns_address}:{port}/version").content.decode("utf-8"), cert=cert, verify=False)
         log.info(f"DockerHost {dns} is healthy!")
         return (True, None)
     except Exception as error:
@@ -266,7 +268,7 @@ class Commands():
         retries = 0
         while not IsHealthy[0] and retries < max_retries:
             time.sleep(retry_wait)
-            IsHealthy = ping_host(instance_dns, port)
+            IsHealthy = ping_host(home, self.args.instance_type, instance_id, instance_dns, port)
             retries += 1
 
         if not IsHealthy[0]:
