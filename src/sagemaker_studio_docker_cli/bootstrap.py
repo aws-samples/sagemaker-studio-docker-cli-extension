@@ -41,8 +41,9 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     
     {create_certs}
     
-    
-    
+    instance_type=$(curl http://169.254.169.254/latest/meta-data/instance-type)
+    instance_id=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+        
     if ( ! [[ "{home}" == "/home/sagemaker-user" ]] || [[ "{home}" == "/root" ]] )
     then
         sudo mkdir -p {home}
@@ -50,9 +51,6 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 \
         {efs_ip_address}:/{user_uid} \
         {home}
-        
-        instance_type=$(curl http://169.254.169.254/latest/meta-data/instance-type)
-        instance_id=$(curl http://169.254.169.254/latest/meta-data/instance-id)
         
         mkdir -p /home/sagemaker-user/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs
         
