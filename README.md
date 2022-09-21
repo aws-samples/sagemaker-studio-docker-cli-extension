@@ -2,7 +2,7 @@
 Helper application to automate setting up `local mode` and `docker` for SageMaker Studio
 
 ## How SageMaker Studio Docker CLI extension works
-It provisions an EC2 instance that is use as a remote docker host that is running docker daemon. `sdocker` does the following:
+It provisions an EC2 instance that is used as a remote docker host to running docker daemon. `sdocker` does the following:
 - Setup networking and security groups between the instance and SageMaker Studio Apps and EFS
 - Provision EC2 instance
 - Mount SageMaker Studio EFS on EC2 instance
