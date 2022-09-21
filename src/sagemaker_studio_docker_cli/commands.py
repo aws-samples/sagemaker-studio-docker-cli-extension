@@ -297,7 +297,6 @@ class Commands():
                 + f",ca={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/ca/cert.pem" \
                 + f",cert={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/cert.pem" \
                 + f",key={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem"
-            print(create_context_command)
             os.system(create_context_command)
             os.system(f"docker context use {self.args.instance_type}_{instance_id}")
         except Exception as error:
