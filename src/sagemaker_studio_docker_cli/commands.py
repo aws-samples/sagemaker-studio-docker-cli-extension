@@ -212,7 +212,9 @@ class Commands():
             gpu_option = "--gpus all"
 
         pre_bootstrap_script = self.read_custom_script(f"{home}/.sagemaker_studio_docker_cli/pre-bootstrap.sh")
-        create_certs = self.read_custom_script(f"{home}/sagemaker-studio-docker-cli-extension/src/sagemaker_studio_docker_cli/create_certs.sh")
+        create_certs = self.read_custom_script(
+            f"{home}/sagemaker-studio-docker-cli-extension/src/sagemaker_studio_docker_cli/create_certs.sh"
+        )
         post_bootstrap_script = self.read_custom_script(f"{home}/.sagemaker_studio_docker_cli/pre-bootstrap.sh")
 
         bootstrap_script = generate_bootstrap_script(
@@ -290,7 +292,12 @@ class Commands():
         try:
             with open(f"{home}/.sagemaker_studio_docker_cli/sdocker-hosts.conf", "w") as file:
                 json.dump(active_host, file)
-            os.system(f"docker context create {self.args.instance_type}_{instance_id} --docker host=tcp://{instance_dns}:{port},ca=/root/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/ca/cert.pem,cert=/root/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/cert.pem,key=/root/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem")
+            create_context_command = f"docker context create {self.args.instance_type}_{instance_id}" \
+                + f"--docker host=tcp://{instance_dns}:{port}" \
+                + f",ca={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/ca/cert.pem" \
+                + f",cert={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/cert.pem" \
+                + f",key={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem"
+            os.system(create_context_command)
             os.system(f"docker context use {self.args.instance_type}_{instance_id}")
         except Exception as error:
             UnhandledError(error)
