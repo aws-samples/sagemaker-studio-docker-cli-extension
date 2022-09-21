@@ -160,6 +160,7 @@ $ aws efs modify-mount-target-security-groups --mount-target-id <mount target id
 ```
 Then you can go ahead and delete `EFSDockerHost`.
 - Currenlty, `sdocker` is setup EC2 with `400GB` root EBS volume by default which will be mainly used to store docker images.
+- Docker uses TLS to connect to Docker Host
 
 ## Security
 

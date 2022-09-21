@@ -293,10 +293,11 @@ class Commands():
             with open(f"{home}/.sagemaker_studio_docker_cli/sdocker-hosts.conf", "w") as file:
                 json.dump(active_host, file)
             create_context_command = f"docker context create {self.args.instance_type}_{instance_id}" \
-                + f"--docker host=tcp://{instance_dns}:{port}" \
+                + f" --docker host=tcp://{instance_dns}:{port}" \
                 + f",ca={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/ca/cert.pem" \
                 + f",cert={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/cert.pem" \
                 + f",key={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem"
+            print(create_context_command)
             os.system(create_context_command)
             os.system(f"docker context use {self.args.instance_type}_{instance_id}")
         except Exception as error:
