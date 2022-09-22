@@ -38,11 +38,12 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     {efs_ip_address}:/{user_uid} \
     /home/sagemaker-user
     
-    
     {create_certs}
     
-    instance_type=$(curl http://169.254.169.254/latest/meta-data/instance-type)
-    instance_id=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+    token = $(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 3600")
+    
+    instance_type=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-type)
+    instance_id=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
         
     if ( ! [[ "{home}" == "/home/sagemaker-user" ]] || [[ "{home}" == "/root" ]] )
     then
@@ -57,6 +58,8 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         mkdir -p $CERTS
         
         _tls_generate_certs "$CERTS"
+
+        chown -R {user_uid}:1001 $CERTS
         
         sudo -u ec2-user docker run -d \
         -p {port}:2376 \
@@ -74,6 +77,9 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         mkdir -p $CERTS
 
         _tls_generate_certs "$CERTS"
+        
+        chown -R {user_uid}:1001 $CERTS
+        
         sudo -u ec2-user docker run -d \
         -p {port}:2376 \
         -p 8080:8080 {gpu_option} \
