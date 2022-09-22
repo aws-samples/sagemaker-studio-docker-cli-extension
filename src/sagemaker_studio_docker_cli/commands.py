@@ -19,9 +19,9 @@ def ping_host(home, instance_type, instance_id, dns, port, retry=True):
     """
     try:
         log.info(f"Pinging {dns}")
-        path_to_cert = f"{home}/.sagemaker_studio_docker_cli/{instance_type}_{instance_id}/certs/client/"
-        cert=(path_to_cert + "cert.pem", path_to_cert + "key.pem")
-        response = json.loads(requests.get(f"https://{dns}:{port}/version", cert=cert, verify=False).content.decode("utf-8"))
+        path_to_cert = f"{home}/.sagemaker_studio_docker_cli/{instance_type}_{instance_id}/certs/"
+        cert=(path_to_cert + "client/cert.pem", path_to_cert + "client/key.pem")
+        response = json.loads(requests.get(f"https://{dns}:{port}/version", cert=cert, verify=path_to_cert + "ca/cert.pem").content.decode("utf-8"))
         log.info(f"DockerHost {dns} is healthy!")
         return (True, None)
     except Exception as error:
