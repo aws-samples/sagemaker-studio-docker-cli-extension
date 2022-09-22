@@ -43,7 +43,7 @@ It provisions an EC2 instance that is used as a remote docker host to running do
 Setup is staightforward, you clone this repo and then run `./setup.sh`:
 ```
 $ git clone https://github.com/aws-samples/sagemaker-studio-docker-cli-extension.git
-$ cd sagemaker_studio_docker_cli
+$ cd sagemaker-studio-docker-cli-extension
 $ ./setup.sh
 ```
 When running `setup.sh` from terminal of `KernalGateway`, make sure to activate your conda environment first.
