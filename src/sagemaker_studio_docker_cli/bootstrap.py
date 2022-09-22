@@ -53,11 +53,11 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         {efs_ip_address}:/{user_uid} \
         {home}
 
-        CERTS={home}/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs
+        CERTS={home}/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}
         
-        mkdir -p $CERTS
+        mkdir -p $CERTS/certs
         
-        _tls_generate_certs "$CERTS"
+        _tls_generate_certs "$CERTS/certs"
 
         chown -R {user_uid}:1001 $CERTS
         
@@ -73,10 +73,10 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         -e DOCKER_TLS_CERTDIR="/certs" {docker_image_name} \
         dockerd --tlsverify --tlscacert=/certs/ca/cert.pem --tlscert=/certs/server/cert.pem --tlskey=/certs/server/key.pem -H=0.0.0.0:2376
     else
-        CERTS=/root/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}/certs
-        mkdir -p $CERTS
+        CERTS=/root/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}
+        mkdir -p $CERTS/certs
 
-        _tls_generate_certs "$CERTS"
+        _tls_generate_certs "$CERTS/certs"
         
         chown -R {user_uid}:1001 $CERTS
         
