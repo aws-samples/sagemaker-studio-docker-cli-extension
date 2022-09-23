@@ -60,17 +60,23 @@ When running `setup.sh` from terminal of `KernalGateway`, make sure to activate 
 ```
 #!/bin/bash
 
-set -ex
-cd ~
-if cd sagemaker-studio-docker-cli-extension 
-then
-    git reset --hard
-    git pull
+set -eux
+STATUS=$(python3 -c "import sagemaker_dataprep";echo $?)
+if [ "$STATUS" -eq 0 ]; then
+  echo 'Instance is of Type Data Wrangler'
 else
-    git clone https://github.com/aws-samples/sagemaker-studio-docker-cli-extension.git
-    cd sagemaker-studio-docker-cli-extension
+  echo 'Instance is not of Type Data Wrangler'
+  cd ~
+  if cd sagemaker-studio-docker-cli-extension 
+  then
+      git reset --hard
+      git pull
+  else
+      git clone https://github.com/aws-samples/sagemaker-studio-docker-cli-extension.git
+      cd sagemaker-studio-docker-cli-extension
+  fi
+  nohup ./setup.sh > docker_setup.out 2>&1 &
 fi
-nohup ./setup.sh > docker_setup.out 2>&1 &
 ```
 2- Encode script content to `base64` encoding using below command:
 ```
