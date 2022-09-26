@@ -66,7 +66,7 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         -p 8080:8080 {gpu_option} \
         -v /root:/root \
         -v /home/sagemaker-user:/home/sagemaker-user \
-        -v $CERTS:/certs \
+        -v $CERTS/certs:/certs \
         -v {home}:{home} \
         --privileged \
         --name dockerd-server \
@@ -85,7 +85,7 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         -p 8080:8080 {gpu_option} \
         -v /root:/root \
         -v /home/sagemaker-user:/home/sagemaker-user \
-        -v $CERTS:/certs \
+        -v $CERTS/certs:/certs \
         --privileged \
         --name dockerd-server \
         -e DOCKER_TLS_CERTDIR="/certs" {docker_image_name} \
