@@ -98,7 +98,7 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     {post_bootstrap}
 
     sleep 10
-    log_path=$(docker inspect dockerd-server | grep "LogPath" | sed 's/"LogPath": "//' | sed 's/",//')
+    log_path=$(sudo -u ec2-user docker inspect dockerd-server | grep "LogPath" | sed 's/"LogPath": "//' | sed 's/",//')
     cp $log_path $CERTS/dockerd-logs/dockerd.log
     cp /var/log/user-data.log $CERTS/dockerd-logs/bootstrap.log
     chown -R {user_uid}:1001 $CERTS/dockerd-logs
