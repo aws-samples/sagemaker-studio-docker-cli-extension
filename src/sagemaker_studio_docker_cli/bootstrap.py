@@ -73,12 +73,6 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         --name dockerd-server \
         -e DOCKER_TLS_CERTDIR="/certs" {docker_image_name} \
         dockerd --tlsverify --tlscacert=/certs/ca/cert.pem --tlscert=/certs/server/cert.pem --tlskey=/certs/server/key.pem -H=0.0.0.0:2376
-
-        sleep 10
-        log_path=$(docker inspect dockerd-server | grep "LogPath" | sed 's/"LogPath": "//' | sed 's/",//')
-        cp $log_path $CERTS/dockerd-logs/dockerd.log
-        chown -R {user_uid}:1001 $CERTS/dockerd-logs/dockerd.log
-
     else
         CERTS=/root/.sagemaker_studio_docker_cli/${{instance_type}}_${{instance_id}}
 
@@ -99,16 +93,15 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         --name dockerd-server \
         -e DOCKER_TLS_CERTDIR="/certs" {docker_image_name} \
         dockerd --tlsverify --tlscacert=/certs/ca/cert.pem --tlscert=/certs/server/cert.pem --tlskey=/certs/server/key.pem -H=0.0.0.0:2376
-
-        sleep 10
-        log_path=$(docker inspect dockerd-server | grep "LogPath" | sed 's/"LogPath": "//' | sed 's/",//')
-        cp $log_path $CERTS/dockerd-logs/dockerd.log
-        chown -R {user_uid}:1001 $CERTS/dockerd-logs/dockerd.log
-
     fi
     
     {post_bootstrap}
 
+    sleep 10
+    log_path=$(docker inspect dockerd-server | grep "LogPath" | sed 's/"LogPath": "//' | sed 's/",//')
+    cp $log_path $CERTS/dockerd-logs/dockerd.log
+    cp /var/log/user-data.log $CERTS/dockerd-logs/bootstrap.log
+    chown -R {user_uid}:1001 $CERTS/dockerd-logs
 --//--"""
 
     return bootstrap_script
