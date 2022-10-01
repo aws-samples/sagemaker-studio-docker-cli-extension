@@ -153,7 +153,7 @@ $ sdocker terminate-current-host
 Otherwise, you will need to terminate the instance manually.
 ## Troubleshooting
 - Consult `~/.sdocker/sdocker.log` for `sdocker` logs.
-- To troubleshoot issues related to host instance (eg. `Unhealthy` host), check AWS EC2 console logs for `bootstrap` script logs.
+- To troubleshoot issues related to host instance (eg. `Unhealthy` host), check logs in `/home/sagemaker-user/.sagemaker_studio_docker_cli/<intance-type_instance-id>/dockerd-logs` folder.
 
 ## Notes
 - `sdocker` does not terminate or stop EC2 instance after it created, always make sure you have terminated unused instances when you are done. You can use `terminate-current-host` command to terminate the current host.
