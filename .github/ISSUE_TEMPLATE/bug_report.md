@@ -28,7 +28,7 @@ Please provide the following logs:
 - `/home/sagemaker-user/.sagemaker_studio_docker_cli/sdocker.log`
 - Docker host EC2 system log, you can get this from AWS console or by running below command:
 ```
-aws ec2 get-console-output --instance-id i-07436fc781ad50018 | sed 's/\\n/\
+aws ec2 get-console-output --instance-id <DockerHost instance-id> | sed 's/\\n/\
 /g' | sed 's/\\r//' | grep "user-data:"
 ```
 ***NOTE:*** Make sure to maintain the newline character in the above command
