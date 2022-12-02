@@ -13,7 +13,7 @@ def get_home():
     return home
 
 
-def ReadFromFile(filename):
+def ReadFromFile(filename, report_err=True):
     """
     Function to read data from json files
     """
@@ -22,7 +22,10 @@ def ReadFromFile(filename):
             data = json.load(meta_file)
         return data
     except FileNotFoundError:
-        log.error(f"File {filename} not found")
+        if report_err:
+            log.error(f"File {filename} not found")
+        else:
+            log.info(f"File {filename} not found")
         raise FileNotFoundError(f"File {filename} not found")
     except Exception as error:
         UnhandledError(error)
@@ -41,7 +44,7 @@ class ReadConfig():
         internal_meta = ReadFromFile(internal_metadata)
         resource_meta = ReadFromFile(resource_metadata)
         try:
-            config_data = ReadFromFile(config_file)
+            config_data = ReadFromFile(config_file, report_err=False)
         except FileNotFoundError:
             config_data = {}
         self.config["UserProfile"] = resource_meta["UserProfileName"]
