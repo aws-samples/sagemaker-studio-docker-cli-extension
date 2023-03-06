@@ -217,7 +217,7 @@ class Commands():
         create_certs = self.read_custom_script(
             f"{home}/sagemaker-studio-docker-cli-extension/src/sagemaker_studio_docker_cli/create_certs.sh"
         )
-        post_bootstrap_script = self.read_custom_script(f"{home}/.sagemaker_studio_docker_cli/pre-bootstrap.sh")
+        post_bootstrap_script = self.read_custom_script(f"{home}/.sagemaker_studio_docker_cli/post-bootstrap.sh")
 
         bootstrap_script = generate_bootstrap_script(
             home,
