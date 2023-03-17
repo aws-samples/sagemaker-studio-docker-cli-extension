@@ -79,4 +79,4 @@ mkdir -p ~/.sagemaker
 echo -e "local:\n    container_root: $HOME/temp" > ~/.sagemaker/config.yaml
 mkdir -p ~/temp
 
-/opt/conda/bin/python3 -m pip install boto3 "sagemaker>=2.80.0"
+/opt/conda/bin/python3 -m pip install "sagemaker>=2.80.0"
