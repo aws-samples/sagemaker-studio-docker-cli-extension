@@ -52,7 +52,7 @@ if [[ `command -v docker` == "" ]]
 then
     if [[ "$(. /etc/os-release && echo "$ID")" == "amzn" ]]
     then
-        sudo yum update -y & sudo yum upgrade -y
+        sudo yum update -y && sudo yum upgrade -y
         if [[ "$(. /etc/os-release && echo "$VERSION")" == "2" ]]
         then
             sudo -u root bash -c 'sudo amazon-linux-extras install docker'            
