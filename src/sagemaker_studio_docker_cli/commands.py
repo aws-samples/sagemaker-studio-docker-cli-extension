@@ -8,7 +8,7 @@ import os
 from config import get_home, ReadFromFile, UnhandledError
 from bootstrap import generate_bootstrap_script
 
-port = 1111
+# port = 1111
 retry_wait = 5
 timeout = 720
 max_retries = 720 // retry_wait
@@ -182,6 +182,7 @@ class Commands():
         Create Docker Host command
         """
         home = get_home()
+        port = self.config["Port"]
         if self.args.subnet_id:
             if self.args.subnet_id in self.config["SubnetIds"]:
                 self.config["SubnetId"] = self.args.subnet_id
@@ -191,20 +192,23 @@ class Commands():
                 raise ValueError(message)
         else:
             self.config["SubnetId"] = self.config["SubnetIds"][0]
-        docker_sg = self.create_sg(
-            "DockerHost",
-            "Docker host security group",
-            self.config["SecurityGroups"][0],
-            0,
-            65535
-        )
-        efs_sg = self.create_sg(
+        
+        docker_sg = self.config["HostSGs"]
+        if len(docker_sg) > 0:
+            docker_sg = [self.create_sg(
+                "DockerHost",
+                "Docker host security group",
+                self.config["SecurityGroups"][0],
+                0,
+                65535
+            )]
+        efs_sg = [self.create_sg(
             "EFSDockerHost",
             "EFS security group used with Docker host",
             "self",
             2049,
             2049
-        )
+        )]
         self.prepare_efs(efs_sg)
         docker_image_name = self.config["DockerImageURI"]
         gpu_option = ""
@@ -236,7 +240,7 @@ class Commands():
         args["InstanceType"] = self.args.instance_type
         if self.config["Key"]:
             args["KeyName"] = self.config["Key"]
-        args["SecurityGroupIds"] = [docker_sg, efs_sg]
+        args["SecurityGroupIds"] = docker_sg + efs_sg
         args["SubnetId"] = self.config["SubnetId"]
         args["MinCount"] = 1
         args["MaxCount"] = 1

@@ -6,7 +6,7 @@ It provisions an EC2 instance that is used as a remote docker host to running do
 - Setup networking and security groups between the instance and SageMaker Studio Apps and EFS
 - Provision EC2 instance
 - Mount SageMaker Studio EFS on EC2 instance
-- Run a `docker:dind` image as Host docker daemon and open map port 1111 to allow access to docker daemon.
+- Run a `docker:dind` image as Host docker daemon and map port 1111 (or custom port) to allow access to docker daemon.
 - Create docker context on the client to connect to docker host
 
 ## Prerequsites
@@ -96,7 +96,16 @@ $ aws sagemaker update-user-profile --domain-id <domain-id> --user-profile-name 
 ```
 6- Delete JupyterServer app and create a new one for the above to take effect
 ## Configuration
-`sdocker` can be configured to choose a different *AMI*, include EC2 key pair and customize root EBS volume size. Configuration file location is  `~/.sagemaker_studio_docker_cli/sdocker.conf`.
+`sdocker` can be configured to do the following (all the below properties are optional):
+- Choose a different *AMI*. Use `ImageId` property to supply required *AMI*.
+- Include EC2 key pair. Use `Key` property to supply public ssh key.
+- Use custom port to connect to *Docker Daemon* on host. Use `Port` property to supply custom port. By default, port value is 1111.
+- Cuustomize root EBS volume size. Use `EBSVolumeSize` property to supply required EBS volume size.
+- Supply instance profile to the *Docker Host* to be able to perform tasks like logging into ECR service. Use `InstanceProfileArn` property to supply instance profile ARN.
+- Use custom security groups for *Docker Host*. Use `HostSGs` property to supply a list of security group ids that will be attached to the *Docker Host*. If an empty list is provided, CLI extension will automatically create one for you.
+- Use custom docker images for CPU or GPU instances. By default, CLI extension uses `docker:dind` image for CPU and `brandsight/dind:nvidia-docker`. Use `DockerImageURI` and `DockerImageNvidiaURI` properties to supply CPU or GPU images respectively.
+
+Configuration file location is  `~/.sagemaker_studio_docker_cli/sdocker.conf`.
 Make sure your *AMI* has docker daemon installed and running by default. It is only tested on `Amazon linux 2` instances. We recommend using *AWS Deep Learning Base AMI (Amazon Linux 2).*. You can use below ASW CLI command to find latest AWS Deep learning AMI ID:
 
 ```
@@ -109,8 +118,10 @@ An example of a valid configuration `~/.sagemaker_studio_docker_cli/sdocker.conf
 {
     "ImageId": "ami-052783664d99ae241",
     "Key": "docker-key",
+    "Port": 1111,
     "EBSVolumeSize": 500,
     "InstanceProfileArn": "arn:aws:iam::012345678910:instance-profile/some-profile-name",
+    "HostSGs": ["sg-00000001", "sg-00000002"],
     "DockerImageURI": "docker:dind",
     "DockerImageNvidiaURI": "brandsight/dind:nvidia-docker"
 }
@@ -158,7 +169,7 @@ Otherwise, you will need to terminate the instance manually.
 ## Notes
 - `sdocker` does not terminate or stop EC2 instance after it created, always make sure you have terminated unused instances when you are done. You can use `terminate-current-host` command to terminate the current host.
 - Networking is setup between *Docker Host*, *SageMaker Studio* and *EFS* using two *Security Groups* (listed below), it is recommended to deleted these when you create new *SageMaker Studio Domain* so `sdocker` can create new ones that are setup correctly:
-  - `DockerHost`
+  - `DockerHost` (You can optionally supply your own security groups if you supply a list of security group ids using `HostSGs` property)
   - `EFSDockerHost`
 If you need to delete `EFSDockerHost` without deleting EFS or Studio domain, you can use the below AWS CLI to update mount target with new list of security groups:
 ```
