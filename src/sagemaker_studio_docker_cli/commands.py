@@ -8,7 +8,7 @@ import os
 from config import get_home, ReadFromFile, UnhandledError
 from bootstrap import generate_bootstrap_script
 
-log_comm = " &>> /home/sagemaker-user/.sagemaker_studio_docker_cli/sdocker.log"
+log_cmd = " &>> /home/sagemaker-user/.sagemaker_studio_docker_cli/sdocker.log"
 retry_wait = 5
 timeout = 720
 max_retries = 720 // retry_wait
@@ -141,9 +141,10 @@ class Commands():
             )
         except Exception as error:
             UnhandledError(error)
-        finally:            
-            os.system(f"docker context use default" + log_comm)
-            os.system(f'docker context rm `docker context list -q | grep "{instance_id}"`' + log_comm)
+        finally:
+            log.info("Running OS level command:")            
+            os.system(f"docker context use default" + log_cmd)
+            os.system(f'docker context rm `docker context list -q | grep "{instance_id}"`' + log_cmd)
 
 
     def terminate_current_host(self, instance_id=None):
@@ -161,9 +162,10 @@ class Commands():
             )
         except Exception as error:
             UnhandledError(error)
-        finally:            
-            os.system(f"docker context use default" + log_comm)
-            os.system(f'docker context rm `docker context list -q | grep "{instance_id}"`' + log_comm)
+        finally:
+            log.info("Running OS level command:")             
+            os.system(f"docker context use default" + log_cmd)
+            os.system(f'docker context rm `docker context list -q | grep "{instance_id}"`' + log_cmd)
         instance_id = sdocker_host_config["ActiveHosts"][0]["InstanceId"]
         instance_dns = sdocker_host_config["ActiveHosts"][0]["InstanceDns"]
         print(f"Successfully terminated instance {instance_id} with private DNS {instance_dns}")
@@ -303,8 +305,9 @@ class Commands():
                 + f",ca={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/ca/cert.pem" \
                 + f",cert={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/cert.pem" \
                 + f",key={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem"
-            os.system(create_context_command + log_comm)
-            os.system(f"docker context use {self.args.instance_type}_{instance_id}" + log_comm)
+            log.info("Running OS level command:") 
+            os.system(create_context_command + log_cmd)
+            os.system(f"docker context use {self.args.instance_type}_{instance_id}" + log_cmd)
         except Exception as error:
             UnhandledError(error)
         return instance_id, instance_dns, port
