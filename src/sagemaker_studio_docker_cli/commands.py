@@ -202,13 +202,13 @@ class Commands():
                 0,
                 65535
             )]
-        efs_sg = [self.create_sg(
+        efs_sg = self.create_sg(
             "EFSDockerHost",
             "EFS security group used with Docker host",
             "self",
             2049,
             2049
-        )]
+        )
         self.prepare_efs(efs_sg)
         docker_image_name = self.config["DockerImageURI"]
         gpu_option = ""
@@ -240,7 +240,7 @@ class Commands():
         args["InstanceType"] = self.args.instance_type
         if self.config["Key"]:
             args["KeyName"] = self.config["Key"]
-        args["SecurityGroupIds"] = docker_sg + efs_sg
+        args["SecurityGroupIds"] = docker_sg + [efs_sg]
         args["SubnetId"] = self.config["SubnetId"]
         args["MinCount"] = 1
         args["MaxCount"] = 1
