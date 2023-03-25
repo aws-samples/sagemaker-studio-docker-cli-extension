@@ -194,7 +194,7 @@ class Commands():
             self.config["SubnetId"] = self.config["SubnetIds"][0]
         
         docker_sg = self.config["HostSGs"]
-        if len(docker_sg) > 0:
+        if len(docker_sg) == 0:
             docker_sg = [self.create_sg(
                 "DockerHost",
                 "Docker host security group",
