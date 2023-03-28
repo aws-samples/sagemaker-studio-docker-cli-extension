@@ -26,9 +26,9 @@ def ping_host(home, instance_type, instance_id, dns, port, retry=True):
         return (True, None)
     except Exception as error:
         if retry:
-            log.error(f"Failed to reach {dns}, retrying in {retry_wait}s")
+            log.error(f"Failed to reach {dns}:{port}, retrying in {retry_wait}s")
         else:
-            log.error(f"Failed to reach {dns}, with error message {error.message}")
+            log.error(f"Failed to reach {dns}:{port}, with error message {error.message}")
         return (False, error)
 
 
