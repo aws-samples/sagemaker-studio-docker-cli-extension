@@ -55,7 +55,7 @@ then
         sudo yum update -y && sudo yum upgrade -y
         if [[ "$(. /etc/os-release && echo "$VERSION")" == "2" ]]
         then
-            sudo -u root bash -c 'sudo amazon-linux-extras install docker'            
+            sudo -u root bash -l -c 'sudo amazon-linux-extras install docker'            
         else
             sudo yum install -y docker
         fi
