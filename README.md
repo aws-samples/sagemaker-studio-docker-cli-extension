@@ -4,6 +4,13 @@ Helper application to automate setting up `local mode` and `docker` for SageMake
 ## How SageMaker Studio Docker CLI extension works
 It provisions an EC2 instance that is used as a remote docker host to running docker daemon. `sdocker` does the following:
 - Setup networking and security groups between the instance and SageMaker Studio Apps and EFS
+  - For EFS, a security group called `EFSDockerHost` is created which only allows connections to port 2049 inbound and outbound
+  - For EC2 instance, you can either supply your own security groups or it will be created for you with open outbound rules and inbounds allowing all ports from SageMaker Studio. The minimum required rules are:
+    - **Inbound**: 
+      - port 1111 (or DockerHostPort if not default), port 8080 and destination is SageMaker Studio secutiry group. Other ports might be required depending on container usage.
+    - **OutBound**:
+      - Port 80 to contact EC2 metadata on `169.254.169.254`
+      - Port 443 to pull images from docker registeries.
 - Provision EC2 instance
 - Mount SageMaker Studio EFS on EC2 instance
 - Run a `docker:dind` image as Host docker daemon and map port 1111 (or custom port) to allow access to docker daemon.
@@ -30,7 +37,8 @@ It provisions an EC2 instance that is used as a remote docker host to running do
   ec2:DescribeNetworkInterfaceAttribute
   ec2:CreateSecurityGroup
   ec2:AuthorizeSecurityGroupIngress
-  ec2:ModifyNetworkInterfaceAttribute
+  ec2:RevokeSecurityGroupEngress
+  ec2:AuthorizeSecurityGroupEngress
   ec2:CreateTags
   ```
 - Docker
