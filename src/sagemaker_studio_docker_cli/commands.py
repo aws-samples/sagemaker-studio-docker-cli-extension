@@ -106,7 +106,7 @@ class Commands():
                             }
                         ]
                     )
-                    rule_response = self.ec2_client.authorize_security_group_engress(
+                    rule_response = self.ec2_client.authorize_security_group_egress(
                     GroupId=response["GroupId"],
                         IpPermissions=[
                             {
