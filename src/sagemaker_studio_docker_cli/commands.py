@@ -51,7 +51,7 @@ class Commands():
         commands[self.args.func]()
 
 
-    def create_sg(self, name, desc, source_sg, from_port, to_port):
+    def create_sg(self, name, desc, source_sg, from_port, to_port, revoke_egress=False):
         """
         Creates security group if not found in VPC
         """
@@ -92,6 +92,36 @@ class Commands():
                     GroupName=name,
                     VpcId=self.config["VpcId"]
                 )
+                if revoke_egress:
+                    revoke_response = self.ec2_client.revoke_security_group_egress(
+                        GroupId=response["GroupId"],
+                        IpPermissions=[
+                            {
+                                "IpProtocol": "-1",
+                                "IpRanges": [
+                                    {
+                                        "CidrIp": "0.0.0.0/0"
+                                    }
+                                ]
+                            }
+                        ]
+                    )
+                    rule_response = self.ec2_client.authorize_security_group_engress(
+                    GroupId=response["GroupId"],
+                        IpPermissions=[
+                            {
+                                "FromPort": from_port,
+                                "IpProtocol": 'tcp',
+                                "ToPort": to_port,
+                                "UserIdGroupPairs": [
+                                    {
+                                        "Description": desc,
+                                        "GroupId": response["GroupId"] if source_sg=="self" else source_sg,
+                                    },
+                                ],
+                            },
+                        ]
+                    )
                 rule_response = self.ec2_client.authorize_security_group_ingress(
                     GroupId=response["GroupId"],
                     IpPermissions=[
@@ -107,7 +137,7 @@ class Commands():
                             ],
                         },
                     ]
-                )
+                )                
                 log.info(f"Security Group id: {response['GroupId']}")
             except botocore.exceptions.ClientError as error:
                 if error.response["Error"]["Code"] != "InvalidGroup.Duplicate":
@@ -209,7 +239,8 @@ class Commands():
             "EFS security group used with Docker host",
             "self",
             2049,
-            2049
+            2049,
+            revoke_egress=True
         )
         self.prepare_efs(efs_sg)
         docker_image_name = self.config["DockerImageURI"]
