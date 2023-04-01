@@ -39,7 +39,6 @@ It provisions an EC2 instance that is used as a remote docker host to running do
   ec2:AuthorizeSecurityGroupIngress
   ec2:RevokeSecurityGroupEngress
   ec2:AuthorizeSecurityGroupEngress
-  ec2:ModifyNetworkInterfaceAttribute
   ec2:CreateTags
   ```
 - Docker
