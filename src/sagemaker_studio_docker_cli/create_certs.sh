@@ -3,10 +3,10 @@ _tls_ensure_private() {
         [ -s "$f" ] || openssl genrsa -out "$f" 4096
     }
     _tls_san() {
-        token = $(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 3600")
+        META_TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 3600")
     
-        IPADDR=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
-        LOCALDNS=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-hostname)
+        IPADDR=$(curl -H "X-aws-ec2-metadata-token: $META_TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
+        LOCALDNS=$(curl -H "X-aws-ec2-metadata-token: $META_TOKEN" http://169.254.169.254/latest/meta-data/local-hostname)
         {
             ip -oneline address | awk '{ gsub(/\/.+$/, "", $4); print "IP:" $4 }'
             {
