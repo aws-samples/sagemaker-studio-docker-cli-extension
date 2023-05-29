@@ -8,7 +8,7 @@ import os
 from config import get_home, ReadFromFile, UnhandledError
 from bootstrap import generate_bootstrap_script
 
-log_cmd = " &>> /home/sagemaker-user/.sagemaker_studio_docker_cli/sdocker.log"
+log_cmd = f" &>> {get_home()}/.sagemaker_studio_docker_cli/sdocker.log"
 retry_wait = 5
 timeout = 720
 max_retries = 720 // retry_wait
