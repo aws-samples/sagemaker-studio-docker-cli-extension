@@ -338,7 +338,15 @@ class Commands():
                 + f",key={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem"
             log.info("Running OS level command:") 
             os.system(create_context_command + log_cmd)
-            os.system(f"docker context use {self.args.instance_type}_{instance_id}" + log_cmd)
+            exit_code = -1
+            retry_count = 0
+            max_retry = 5
+            while exit_code != 0 and retry_count < max_retry:
+                exit_code = os.system(f"docker context use {self.args.instance_type}_{instance_id}" + log_cmd)
+                if exit_code != 0:
+                    log.error("Unable to switch context, retrying....")
+                    time.sleep(1)
+                retry_count += 1
         except Exception as error:
             UnhandledError(error)
         return instance_id, instance_dns, port
