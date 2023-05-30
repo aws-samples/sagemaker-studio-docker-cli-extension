@@ -336,13 +336,16 @@ class Commands():
                 + f",ca={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/ca/cert.pem" \
                 + f",cert={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/cert.pem" \
                 + f",key={home}/.sagemaker_studio_docker_cli/{self.args.instance_type}_{instance_id}/certs/client/key.pem"
-            log.info("Running OS level command:") 
+            log.info(f"Running OS level command: {create_context_command}{log_cmd}") 
             os.system(create_context_command + log_cmd)
             exit_code = -1
             retry_count = 0
             max_retry = 5
+            time.sleep(2)
             while exit_code != 0 and retry_count < max_retry:
+                log.info(f"Running OS level command: docker context use {self.args.instance_type}_{instance_id}{log_cmd}") 
                 exit_code = os.system(f"docker context use {self.args.instance_type}_{instance_id}" + log_cmd)
+                log.info(f"Exit code for above command: {exit_code}")
                 if exit_code != 0:
                     log.error("Unable to switch context, retrying....")
                     time.sleep(1)
