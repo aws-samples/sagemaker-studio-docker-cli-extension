@@ -69,7 +69,9 @@ then
         echo "docker not installed, please refer on how to install docker CLI (https://docs.docker.com/get-docker/)."
         exit 1
     fi
-elif [[ `command -v docker-compose` == "" ]]
+fi
+
+if [[ `command -v docker-compose` == "" ]]
 then
     echo "Installing docker-compose ..."
     python3 -m pip install docker-compose
