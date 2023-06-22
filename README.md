@@ -48,6 +48,8 @@ It provisions an EC2 instance that is used as a remote docker host to running do
 - Boto3
 
 ## Setup
+### Environment setup
+You can use [this](https://github.com/aws-samples/sagemaker-studio-docker-cli-extension/blob/main/CloudFormationTemplate/studio-vpc-only-with-nat.yaml) CloudFormation Template to setup minimal environment.
 ### Manual Setup
 Setup is staightforward, you clone this repo and then run `./setup.sh`:
 ```
