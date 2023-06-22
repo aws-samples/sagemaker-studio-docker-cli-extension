@@ -1,0 +1,348 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  This template creates the infrastructure required to implement and test
+  SageMaker Studio VPC Mode with internet access. It creates a VPC, Subnets,
+  internet gateway, VPC Policies, and IAM Execution Roles. **WARNING** This
+  template creates AWS Resources in your account. You will be billed for the AWS
+  resources used if you create a stack from this template.
+Parameters:
+  ProjectName:
+    AllowedPattern: '[A-Za-z0-9-]{1,16}'
+    ConstraintDescription: >-
+      Maximum of 22 alphanumeric characters. Can include hyphens (-), but not
+      spaces. Must be unique within your account in an AWS Region.
+    Description: Project Name used to identify your resources
+    MaxLength: '16'
+    MinLength: '1'
+    Type: String
+    Default: studiovpc
+  VpcCIDR:
+    Type: String
+    Default: 10.2.0.0/16
+  PublicSubnetCIDR:
+    Type: String
+    Default: 10.2.0.0/24
+  PrivateSubnetCIDR:
+    Type: String
+    Default: 10.2.1.0/24
+Resources:
+  SageMakerStudioPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Description: SageMaker Studio CFN stack policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AdditionalPermissions
+            Effect: Allow
+            Action:
+              - ec2:CreateTags
+              - ec2:DescribeImages
+              - ec2:DescribeInstanceTypes
+              - ec2:DescribeSecurityGroups
+              - ec2:RunInstances
+              - ec2:TerminateInstances
+              - ec2:DescribeInstances
+              - ec2:CreateSecurityGroup
+              - ec2:AuthorizeSecurityGroupIngress
+              - ec2:RevokeSecurityGroupEgress
+              - ec2:AuthorizeSecurityGroupEgress
+              - ec2:DescribeNetworkInterfaceAttribute
+              - ec2:ModifyNetworkInterfaceAttribute
+              - ec2:CreateTags
+              - ecr:CreateRepository
+              - ecr:DescribeRepositories
+              - ecr:GetAuthorizationToken
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:CompleteLayerUpload
+              - ecr:GetDownloadUrlForLayer
+              - ecr:InitiateLayerUpload
+              - ecr:PutImage
+              - ecr:TagResource
+              - ecr:UploadLayerPart
+              - s3:ListAllMyBuckets
+              - sts:GetCallerIdentity
+              - elasticfilesystem:DescribeMountTargetSecurityGroups
+              - elasticfilesystem:DescribeMountTargets
+              - elasticfilesystem:ModifyMountTargetSecurityGroups
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - s3:CreateBucket
+              - sagemaker:ListTags
+            Resource: '*'
+  SageMakerStudioRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      RoleName: !Sub '${ProjectName}-studio-role'
+      ManagedPolicyArns:
+        - !Ref SageMakerStudioPolicy
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-vpc'
+  PublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: !Ref PublicSubnetCIDR
+      VpcId: !Ref VPC
+      AvailabilityZone: !Sub '${AWS::Region}a'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-public-subnet'
+  PrivateSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: !Ref PrivateSubnetCIDR
+      VpcId: !Ref VPC
+      AvailabilityZone: !Sub '${AWS::Region}a'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-private-subnet'
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  ElasticIPAddress:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: VPC
+  NatGateway:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !GetAtt ElasticIPAddress.AllocationId
+      SubnetId: !Ref PublicSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-NAT'
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Public
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PrivateRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private
+  PrivateRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+  PublicSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+  PrivateSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: security group for SageMaker Studio
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-studio-security-group'
+  SecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: '-1'
+      GroupId: !Ref SecurityGroup
+      SourceSecurityGroupId: !Ref SecurityGroup
+  StudioDomain:
+    Type: AWS::SageMaker::Domain
+    Properties: 
+      AppNetworkAccessType: VpcOnly
+      AuthMode: IAM
+      DefaultUserSettings: 
+          ExecutionRole: !GetAtt SageMakerStudioRole.Arn
+          SecurityGroups: 
+            - !Ref SecurityGroup
+      DomainName: !Sub ${ProjectName}-domain
+      SubnetIds: 
+        - !Ref PrivateSubnet
+      VpcId: !Ref VPC
+  StudioUser:
+    Type: AWS::SageMaker::UserProfile
+    Properties: 
+      DomainId: !Ref StudioDomain
+      UserProfileName: sagemaker-developer
+  CleanUpStudioStackPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Description: SageMaker Studio CFN stack cleanup policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: StackCleanUpAccess
+            Effect: Allow
+            Action:
+              - ec2:DeleteSecurityGroup
+              - ec2:DescribeSecurityGroups
+              - ec2:ModifyNetworkInterfaceAttribute
+              - ec2:DeleteNetworkInterface
+              - ec2:DescribeSecurityGroupRules
+              - ec2:RevokeSecurityGroupIngress
+              - ec2:RevokeSecurityGroupEgress
+              - elasticfilesystem:ModifyMountTargetSecurityGroups
+              - elasticfilesystem:DescribeFileSystem
+              - elasticfilesystem:DescribeMountTargets
+              - elasticfilesystem:DeleteMountTarget
+              - elasticfilesystem:DeleteFileSystem
+              - elasticfilesystem:DescribeMountTargetSecurityGroups
+              - sagemaker:DescribeDomain
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: '*'
+  CleanUpStackRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      RoleName: !Sub '${ProjectName}-studio-cleanup-role'
+      ManagedPolicyArns:
+        - !Ref CleanUpStudioStackPolicy
+  CleanUpStackLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile:
+          !Join
+            - "\n"
+            - - "import boto3"
+              - "import botocore"
+              - "import cfnresponse"
+              - "import os"
+              - "import time"
+              - ""
+              - "domain_id = os.environ['DomainId']"
+              - "vpc_id = os.environ['VPCId']"
+              - ""
+              - "sm_client = boto3.client('sagemaker')"
+              - "efs_client = boto3.client('efs')"
+              - "ec2_client = boto3.client('ec2')"
+              - ""
+              - "DELETE = 'Delete'"
+              - "response_data = {}"
+              - ""
+              - "def delete_with_retry(api, ErrorCodes, max_retries=10, delay=1, **kwargs):"
+              - "    retry = True"
+              - "    retries = max_retries"
+              - "    while retry and retries > 0:"
+              - "        try:"
+              - "            api(**kwargs)"
+              - "            print(f'deletion completed with {api}')"
+              - "            retry = False"
+              - "        except botocore.exceptions.ClientError as e:"
+              - "            ErrorCode = e.response['Error']['Code']"
+              - "            if ErrorCode in ErrorCodes:"
+              - "                print(f'Got {ErrorCode}, retrying ', max_retries - retries + 1)"
+              - "                retries = retries - 1"
+              - "                if retries > 0:"
+              - "                    time.sleep(delay)"
+              - "                delay = delay * 2"
+              - "            else:"
+              - "                print(e)"
+              - "                retry = False"
+              - "        except Exception as e:"
+              - "            retry = False"
+              - "            print(e)"
+              - ""
+              - "def handler(event, context):"
+              - "  try:"
+              - "    if event['RequestType'] == DELETE:"
+              - "      efs_id = sm_client.describe_domain(DomainId=domain_id)['HomeEfsFileSystemId']"
+              - "      Efs_response = efs_client.describe_mount_targets(FileSystemId=efs_id)"
+              - "      mount_target_id = Efs_response['MountTargets'][0]['MountTargetId']"
+              - "      security_groups = ec2_client.describe_security_groups(Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}])['SecurityGroups']"
+              - "      default_sg = ec2_client.describe_security_groups(Filters=[{'Name': 'group-name', 'Values': ['default']}, {'Name': 'vpc-id', 'Values': [vpc_id]}])['SecurityGroups'][0]['GroupId']"
+              - "      efs_client.modify_mount_target_security_groups(MountTargetId=mount_target_id, SecurityGroups=[default_sg])"
+              - "      delete_with_retry(api=efs_client.delete_mount_target, ErrorCodes=['MountTargetNotFound'], **{'MountTargetId': mount_target_id})"
+              - "      delete_with_retry(api=efs_client.delete_file_system, ErrorCodes=['FileSystemInUse'], **{'FileSystemId': efs_id})"
+              - "      for sg in security_groups:"
+              - "          sg_id = sg['GroupId']"
+              - "          sg_rules = ec2_client.describe_security_group_rules(Filters=[{'Name': 'group-id', 'Values': [sg_id]}])"
+              - "          egress_rules = []"
+              - "          ingress_rules = []"
+              - "          for sg_rule in sg_rules['SecurityGroupRules']:"
+              - "              if sg_rule['IsEgress']:"
+              - "                  egress_rules.append(sg_rule['SecurityGroupRuleId'])"
+              - "              else:"
+              - "                  ingress_rules.append(sg_rule['SecurityGroupRuleId'])"
+              - "          if len(egress_rules) > 0:"
+              - "              ec2_client.revoke_security_group_egress(GroupId=sg_id, SecurityGroupRuleIds=egress_rules)"
+              - "          if len(ingress_rules) > 0:"
+              - "              ec2_client.revoke_security_group_ingress(GroupId=sg_id, SecurityGroupRuleIds=ingress_rules)"
+              - "      for sg in security_groups:"
+              - "          sg_id = sg['GroupId']"
+              - "          print('Deleteing security group id: ', sg_id)"
+              - "          delete_with_retry(api=ec2_client.delete_security_group, ErrorCodes=['DependencyViolation'], **{'GroupId': sg_id})"
+              - "    cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)"
+              - "  except Exception as e:"
+              - "    print(e)"
+              - "    cfnresponse.send(event, context, cfnresponse.FAILED, response_data)"
+      Environment:
+        Variables:
+          DomainId: !Ref StudioDomain
+          VPCId: !Ref VPC
+      FunctionName: !Sub '${ProjectName}-studio-cleanup-lambda'
+      Handler: index.handler
+      Runtime: python3.8
+      Role: !GetAtt CleanUpStackRole.Arn
+      Timeout: 900
+  TriggerCleanupStackWorkflow:
+    Type: Custom::Resource
+    Properties:
+      ServiceToken: !GetAtt CleanUpStackLambda.Arn
+
+Outputs:
+  ExecutionRoleARN:
+    Value: !GetAtt SageMakerStudioRole.Arn
+  PrivateSubnet:
+    Value: !Ref PrivateSubnet
+  SecurityGroup:
+    Value: !Ref SecurityGroup
+  StudioDomainId:
+    Value: !Ref StudioDomain
+  StudioUserProfile:
+    Value: sagemaker-developer
