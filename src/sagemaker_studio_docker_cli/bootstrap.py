@@ -1,4 +1,4 @@
-def generate_bootstrap_script(home, efs_ip_address, port, user_uid, gpu_option, docker_image_name, pre_bootstrap, post_bootstrap, create_certs):
+def generate_bootstrap_script(home, efs_ip_address, port, user_uid, gpu_option, docker_image_name, pre_bootstrap, post_bootstrap, create_certs, additional_ports):
     bootstrap_script = f"""Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
@@ -64,7 +64,8 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         
         sudo -u ec2-user docker run -d \
         -p {port}:2376 \
-        -p 8080:8080 {gpu_option} \
+        -p {' -p '.join([aport + ':' + aport for aport in additional_ports])}\
+        {gpu_option} \
         -v /root:/root \
         -v /home/sagemaker-user:/home/sagemaker-user \
         -v $CERTS/certs:/certs \
@@ -85,7 +86,8 @@ exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
         
         sudo -u ec2-user docker run -d \
         -p {port}:2376 \
-        -p 8080:8080 {gpu_option} \
+        -p {' -p '.join([aport + ':' + aport for aport in additional_ports])} \
+        {gpu_option} \
         -v /root:/root \
         -v /home/sagemaker-user:/home/sagemaker-user \
         -v $CERTS/certs:/certs \

@@ -115,6 +115,7 @@ $ aws sagemaker update-user-profile --domain-id <domain-id> --user-profile-name 
 - Supply instance profile to the *Docker Host* to be able to perform tasks like logging into ECR service. Use `InstanceProfileArn` property to supply instance profile ARN.
 - Use custom security groups for *Docker Host*. Use `HostSGs` property to supply a list of security group ids that will be attached to the *Docker Host*. If an empty list is provided, CLI extension will automatically create one for you.
 - Use custom docker images for CPU or GPU instances. By default, CLI extension uses `docker:dind` image for CPU and `brandsight/dind:nvidia-docker`. Use `DockerImageURI` and `DockerImageNvidiaURI` properties to supply CPU or GPU images respectively.
+- You can choose to open additional ports by supplying a list of ports (as a string) under `AdditionalPorts` property.
 
 Configuration file location is  `~/.sagemaker_studio_docker_cli/sdocker.conf`.
 Make sure your *AMI* has docker daemon installed and running by default. It is only tested on `Amazon linux 2` instances. We recommend using *AWS Deep Learning Base AMI (Amazon Linux 2).*. You can use below ASW CLI command to find latest AWS Deep learning AMI ID:
@@ -134,7 +135,8 @@ An example of a valid configuration `~/.sagemaker_studio_docker_cli/sdocker.conf
     "InstanceProfileArn": "arn:aws:iam::012345678910:instance-profile/some-profile-name",
     "HostSGs": ["sg-00000001", "sg-00000002"],
     "DockerImageURI": "docker:dind",
-    "DockerImageNvidiaURI": "brandsight/dind:nvidia-docker"
+    "DockerImageNvidiaURI": "brandsight/dind:nvidia-docker",
+    "AdditionalPorts": [ "8000", "443" ]
 }
 ```
 

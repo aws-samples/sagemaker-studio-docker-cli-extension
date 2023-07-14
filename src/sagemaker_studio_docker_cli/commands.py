@@ -255,6 +255,7 @@ class Commands():
             f"{home}/sagemaker-studio-docker-cli-extension/src/sagemaker_studio_docker_cli/create_certs.sh"
         )
         post_bootstrap_script = self.read_custom_script(f"{home}/.sagemaker_studio_docker_cli/post-bootstrap.sh")
+        additional_ports = self.config["AdditionalPorts"]
 
         bootstrap_script = generate_bootstrap_script(
             home,
@@ -265,7 +266,8 @@ class Commands():
             docker_image_name, 
             pre_bootstrap_script, 
             post_bootstrap_script, 
-            create_certs
+            create_certs,
+            additional_ports
         )
 
         args = {}

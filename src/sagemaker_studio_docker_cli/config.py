@@ -166,6 +166,10 @@ class ReadConfig():
                 self.config["DockerImageNvidiaURI"] = config_data["DockerImageNvidiaURI"]
             else:
                 self.config["DockerImageNvidiaURI"] = "brandsight/dind:nvidia-docker"
+            if "AdditionalPorts" in config_data.keys():
+                self.config["AdditionalPorts"] = config_data["AdditionalPorts"]
+                if "8080" not in self.config["AdditionalPorts"]:
+                    self.config["AdditionalPorts"].append("8080")
         except Exception as error:
             UnhandledError(error)
     
