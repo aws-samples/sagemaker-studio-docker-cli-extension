@@ -9,7 +9,6 @@ It provisions an EC2 instance that is used as a remote docker host to running do
     - **Inbound**: 
       - port 1111 (or DockerHostPort if not default), port 8080 and destination is SageMaker Studio secutiry group. Other ports might be required depending on container usage.
     - **OutBound**:
-      - Port 80 to contact EC2 metadata on `169.254.169.254`
       - Port 443 to pull images from docker registeries.
 - Provision EC2 instance
 - Mount SageMaker Studio EFS on EC2 instance
