@@ -327,7 +327,7 @@ Resources:
           VPCId: !Ref VPC
       FunctionName: !Sub '${ProjectName}-studio-cleanup-lambda'
       Handler: index.handler
-      Runtime: python3.8
+      Runtime: python3.11
       Role: !GetAtt CleanUpStackRole.Arn
       Timeout: 900
   TriggerCleanupStackWorkflow:
