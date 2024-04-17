@@ -1,4 +1,5 @@
-# SageMaker Studio Docker CLI extension - Docker integration for SageMaker Studio
+# [DEPRECATED] SageMaker Studio Docker CLI extension - Docker integration for SageMaker Studio
+**Refer to new [Local Mode](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-local.html) by SageMaker service for recommended alternative**
 Helper application to automate setting up `local mode` and `docker` for SageMaker Studio. You can also install [SageMaker Studio Docker UI extension](https://github.com/aws-samples/sagemaker-studio-docker-ui-extension) to get a UI interface that can interact with this extension seamlessly.
 
 ## How SageMaker Studio Docker CLI extension works
